@@ -42,7 +42,7 @@ client.on("ready", async () => {
 	if (process.env.NODE_ENV === "production") {
 		client.user.setStatus("online");
 
-		client.user.setActivity(`Fates List`, {
+		client.user.setActivity(`Select List`, {
 			type: "WATCHING",
 		});
 	} else {
