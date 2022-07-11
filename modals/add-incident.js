@@ -2,7 +2,7 @@ module.exports = {
 	data: {
 		name: "add-incident",
 	},
-	async execute(client, interaction, server) {
+	async execute(client, interaction, server, fetch) {
 		const title = interaction.getTextInputValue("title");
 		const description = interaction.getTextInputValue("description");
 
