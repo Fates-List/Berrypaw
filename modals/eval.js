@@ -4,7 +4,7 @@ module.exports = {
 	data: {
 		name: "eval",
 	},
-	async execute(client, interaction, server) {
+	async execute(client, interaction, server, fetch) {
 		const code = interaction.getTextInputValue("code");
 		let inline = interaction.getTextInputValue("inline") || "n";
 		let hidden = interaction.getTextInputValue("hidden") || "n";

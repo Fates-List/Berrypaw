@@ -1,4 +1,5 @@
 # Berrypaw
+
 Berrypaw is a Discord Bot that allows people to view and make changes to their bots on Select List/Fates List as well as monitor the Fates List API status
 
 # About this Project

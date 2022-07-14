@@ -5,7 +5,7 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("eval")
 		.setDescription("Test some code!"),
-	async execute(client, interaction, server) {
+	async execute(client, interaction, server, fetch) {
 		const isStaff = await client.isStaff(interaction.user.id, 6.5);
 		if (!isStaff.allowed)
 			return interaction.reply({

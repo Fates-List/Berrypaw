@@ -12,12 +12,17 @@ const fs = require("fs");
 const modals = require("discord-modals");
 const server = require("./server");
 const { forums, logChannels } = require("./data/channels.json");
+const fetch = require("node-fetch");
 require("colors");
 require("dotenv").config();
 
 // Initalize Client
 const client = new Client({
-	intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES],
+	intents: [
+		Intents.FLAGS.GUILDS,
+		Intents.FLAGS.GUILD_MESSAGES,
+		Intents.FLAGS.GUILD_MEMBERS,
+	],
 });
 
 // Client Extension
@@ -42,7 +47,7 @@ client.on("ready", async () => {
 	if (process.env.NODE_ENV === "production") {
 		client.user.setStatus("online");
 
-		client.user.setActivity(`Fates List`, {
+		client.user.setActivity(`Select List`, {
 			type: "WATCHING",
 		});
 	} else {
@@ -75,6 +80,7 @@ client.on("error", (error) => {
 client.commands = new Collection();
 client.buttons = new Collection();
 client.modals = new Collection();
+client.menuFiles = new Collection();
 
 // Add Commands
 const commandFiles = fs
@@ -94,6 +100,16 @@ const modalFiles = fs
 for (const file of modalFiles) {
 	const modal = require(`./modals/${file}`);
 	client.modals.set(modal.data.name, modal);
+}
+
+// Add Select Menus
+const menuFiles = fs
+	.readdirSync("./menus")
+	.filter((file) => file.endsWith(".js"));
+
+for (const file of menuFiles) {
+	const menu = require(`./menus/${file}`);
+	client.menuFiles.set(menu.data.name, menu);
 }
 
 // Add Buttons
@@ -188,7 +204,7 @@ client.on("interactionCreate", async (interaction) => {
 
 		if (command) {
 			try {
-				await command.execute(client, interaction, server);
+				await command.execute(client, interaction, server, fetch);
 			} catch (error) {
 				console.error(error);
 
@@ -213,7 +229,7 @@ client.on("interactionCreate", async (interaction) => {
 
 		if (button) {
 			try {
-				await button.execute(client, interaction, server);
+				await button.execute(client, interaction, server, fetch);
 			} catch (error) {
 				console.error(error);
 
@@ -230,7 +246,7 @@ client.on("interactionCreate", async (interaction) => {
 			// Check if button is equal to a slash command
 			if (command) {
 				try {
-					await command.execute(client, interaction, server);
+					await command.execute(client, interaction, server, fetch);
 				} catch (error) {
 					console.error(error);
 
@@ -247,6 +263,30 @@ client.on("interactionCreate", async (interaction) => {
 				// button does not equal to anything
 				await interaction.reply("This button does not have any functionality.");
 			}
+		}
+	}
+
+	// Select Menu
+	if (interaction.isSelectMenu()) {
+		const menu = client.menuFiles.get(interaction.customId);
+
+		if (menu) {
+			try {
+				await menu.execute(client, interaction, fetch);
+			} catch (error) {
+				console.error(error);
+
+				let embed = new MessageEmbed()
+					.setTitle("Oops, there was an error!")
+					.setColor("RANDOM")
+					.addField("Message", Formatters.codeBlock("javascript", error), false);
+
+				await interaction.reply({
+					embeds: [embed],
+				});
+			}
+		} else {
+			await interaction.reply("Sorry, that menu does not exist.");
 		}
 	}
 });
@@ -266,7 +306,7 @@ client.on("modalSubmit", async (interaction) => {
 	}
 
 	try {
-		await modal.execute(client, interaction, server);
+		await modal.execute(client, interaction, server, fetch);
 	} catch (error) {
 		let embed = new MessageEmbed()
 			.setTitle("Oops, there was an error!")
