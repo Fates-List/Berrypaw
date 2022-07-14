@@ -19,8 +19,15 @@ module.exports = (client) => {
 		let metro = await fetch(metroURL);
 		let selectlist = await fetch(selectlistURL);
 
+		// Allowed variable (Will be set to true if the user has the required permission)
+		let allowed = false;
+
 		// Check if user is staff and ensure that the user perm is equal or higher than the required perm level
-		if (fates.statusText === "OK" && metro.statusText === "OK" && selectlist.statusText === "OK") {
+		if (
+			fates.statusText === "OK" &&
+			metro.statusText === "OK" &&
+			selectlist.statusText === "OK"
+		) {
 			fates = await fates.json();
 			metro = await metro.json();
 			selectlist = await selectlist.json();
@@ -30,29 +37,30 @@ module.exports = (client) => {
 
 			// Fetch the role/badge data from Selectlist
 			selectlist = {
-				roles: selectlist.roles, 
-				badges: selectlist.badges
+				roles: selectlist.roles,
+				badges: selectlist.badges,
+				perm: selectlist.perm,
 			};
 
-			const permNumber = fates.perm;
-
-			if (permNumber >= permRequirement) {
-				return {
-					fates: fates,
-					metro: metro || {},
-					selectlist: selectlist || {},
-					allowed: true,
-				};
-			} else {
-				return {
-					fates: fates,
-					metro: metro || {},
-					selectlist: selectlist || {},
-					allowed: false,
-				};
+			if (fates.perm >= permRequirement) {
+				allowed = true;
+			} else if (metro.sudo) {
+				allowed = true;
+			} else if (selectlist.perm >= permRequirement) {
+				allowed = true;
 			}
+
+			return {
+				fates: fates,
+				metro: metro || {},
+				selectlist: selectlist || {},
+				allowed: allowed,
+			};
 		} else {
 			return {
+				fates: {},
+				metro: {},
+				selectlist: {},
 				allowed: false,
 			};
 		}

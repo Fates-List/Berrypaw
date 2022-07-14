@@ -21,7 +21,7 @@
 		"fs": "^0.0.1-security",
 		"node-fetch": "^3.2.8",
 		"pg": "^8.7.3",
-		"sequelize": "^6.21.2",
+		"sequelize": "^6.21.3",
 		"ws": "^8.8.0"
 	},
 	"devDependencies": {

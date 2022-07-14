@@ -4,7 +4,7 @@ module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("permcheck")
 		.setDescription("Check your permission level"),
-	async execute(client, interaction, server) {
+	async execute(client, interaction, server, fetch) {
 		const staff = await client.isStaff(interaction.user.id, 0.0);
 
 		const clean = async (text) => {
