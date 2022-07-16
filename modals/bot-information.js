@@ -58,10 +58,6 @@ module.exports = {
 				});
 			}
 
-			if (data.tags.map((tag) => tag.name).includes("Music")) {
-				data.tags.splice(data.tags.map((tag) => tag.name).indexOf("Music"), 1);
-			} // Remove when FL bug is fixed
-
 			const embed = new client.MessageEmbed()
 				.setTitle(data.username)
 				.setColor("RANDOM")
