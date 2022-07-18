@@ -1,27 +1,28 @@
-const { SlashCommandBuilder } = require("@discordjs/builders");
-const { Modal, TextInputComponent, showModal } = require("discord-modals");
+const {
+	SlashCommandBuilder,
+	TextInputBuilder,
+	ActionRowBuilder,
+} = require("@discordjs/builders");
+const { ModalBuilder, TextInputStyle } = require("discord.js");
 
 module.exports = {
 	data: new SlashCommandBuilder()
 		.setName("bot-info")
 		.setDescription("Get some information about a bot on Select List and more."),
 	async execute(client, interaction, server) {
-		const modal = new Modal()
+		const modal = new ModalBuilder()
 			.setCustomId("bot-information")
-			.setTitle("Bot Information")
-			.addComponents([
-				new TextInputComponent()
-					.setCustomId("bot-id")
-					.setLabel("Bot ID")
-					.setStyle("SHORT")
-					.setMinLength(1)
-					.setPlaceholder("Please enter the bot's ID.")
-					.setRequired(true),
-			]);
+			.setTitle("Bot Information");
 
-		showModal(modal, {
-			client: client,
-			interaction: interaction,
-		});
+		const botID = new TextInputBuilder()
+			.setCustomId("bot-id")
+			.setLabel("Bot ID")
+			.setStyle(TextInputStyle.Paragraph);
+
+		const firstRow = new ActionRowBuilder().addComponents([botID]);
+
+		modal.addComponents([firstRow]);
+
+		await interaction.showModal(modal);
 	},
 };

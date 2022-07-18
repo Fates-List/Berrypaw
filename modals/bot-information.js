@@ -3,7 +3,7 @@ module.exports = {
 		name: "bot-information",
 	},
 	async execute(client, interaction, server, fetch) {
-		const botID = interaction.getTextInputValue("bot-id");
+		const botID = interaction.fields.getTextInputValue("bot-id");
 		const staff = await client.isStaff(interaction.user.id, 2);
 
 		const data = await fetch(
@@ -58,13 +58,20 @@ module.exports = {
 				});
 			}
 
+			const tags = data.tags.map((tag) => tag.name).join(", ");
+
+			const fields = [
+				{ name: "Short Description", value: data.description, inline: false },
+				{ name: "Tags", value: tags, inline: false },
+				{ name: "Bot ID", value: data.bot_id, inline: false },
+			];
+
 			const embed = new client.MessageEmbed()
 				.setTitle(data.username)
-				.setColor("RANDOM")
+				.setColor(client.colors.Success)
 				.setURL(`https://select.fateslist.xyz/bot/${data.bot_id}`)
 				.setThumbnail(data.avatar)
-				.addField("Short Description:", data.description, false)
-				.addField("Tags:", data.tags.map((tag) => tag.name).join(", "), false);
+				.addFields(fields);
 
 			await interaction.reply({
 				embeds: [embed],
