@@ -35,7 +35,9 @@ client.MessageEmbed = EmbedBuilder;
 // Ready Event
 client.on("ready", async () => {
 	console.log(
-		`${"[Discord]".yellow} ${"[Authentication]".green} => ${`Logged in as ${client.user.tag}!`.red}`
+		`${"[Discord]".yellow} ${"[Authentication]".green} => ${
+			`Logged in as ${client.user.tag}!`.red
+		}`
 	);
 
 	// Set Client Activity/Status
@@ -76,7 +78,7 @@ client.on("error", (error) => {
 client.commands = new Collection();
 client.buttons = new Collection();
 client.modals = new Collection();
-client.menuFiles = new Collection();
+client.menus = new Collection();
 
 // Add Commands
 const commandFiles = fs
@@ -105,8 +107,8 @@ const menuFiles = fs
 
 for (const file of menuFiles) {
 	const menu = require(`./select_menus/${file}`);
-	.readdirSync("./menus")
-	.filter((file) => file.endsWith(".js"));
+	client.menus.set(menu.data.name, menu);
+}
 
 // Add Buttons
 const buttonFiles = fs
@@ -301,9 +303,10 @@ client.on("interactionCreate", async (interaction) => {
 			}
 		}
 	}
-        // Select Menu
+
+	// Select Menu
 	if (interaction.isSelectMenu()) {
-		const menu = client.menuFiles.get(interaction.customId);
+		const menu = client.menus.get(interaction.customId);
 
 		if (menu) {
 			try {
@@ -330,12 +333,11 @@ client.on("interactionCreate", async (interaction) => {
 			await interaction.reply("Sorry, that menu does not exist.");
 		}
 	}
-        // Modals
+
+	// Modals
 	if (interaction.type === InteractionType.ModalSubmit) {
 		const modal = client.modals.get(interaction.customId);
-	try {
-		await modal.execute(client, interaction, server, fetch);
-	} catch (error) {
+
 		if (!modal) {
 			let embed = new client.MessageEmbed()
 				.setTitle("Error")
@@ -345,25 +347,25 @@ client.on("interactionCreate", async (interaction) => {
 			await interaction.reply({
 				embeds: [embed],
 			});
-		}
+		} else {
+			try {
+				await modal.execute(client, interaction, server, fetch);
+			} catch (error) {
+				let embed = new client.MessageEmbed()
+					.setTitle("Oops, there was an error!")
+					.setColor(client.colors.Error)
+					.addFields([
+						{
+							name: "Message",
+							value: Formatters.codeBlock("javascript", error),
+							inline: false,
+						},
+					]);
 
-		try {
-			await modal.execute(client, interaction, server, fetch);
-		} catch (error) {
-			let embed = new client.MessageEmbed()
-				.setTitle("Oops, there was an error!")
-				.setColor(client.colors.Error)
-				.addFields([
-					{
-						name: "Message",
-						value: Formatters.codeBlock("javascript", error),
-						inline: false,
-					},
-				]);
-
-			await interaction.reply({
-				embeds: [embed],
-			});
+				await interaction.reply({
+					embeds: [embed],
+				});
+			}
 		}
 	}
 });
