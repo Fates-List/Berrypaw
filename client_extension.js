@@ -8,15 +8,6 @@ module.exports = (client) => {
 		client.prefix = process.env.DEV_PREFIX;
 	}
 
-	// Embed Colors
-	client.colors = {
-		Error: 0xff0000, // red
-		Info: 0x0000ff, // blue
-		Success: 0x00ff00, // green
-		Warning: 0xffff00, // yellow
-		Prompt: 0x00ffff, // cyan
-	};
-
 	client.isStaff = async (userID, permRequirement) => {
 		// Render the URL
 		const fatesURL = `https://api.fateslist.xyz/baypaw/perms/${userID}`;

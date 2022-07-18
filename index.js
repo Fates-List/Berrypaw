@@ -3,12 +3,13 @@ const {
 	Client,
 	Collection,
 	Formatters,
-	EmbedBuilder,
-	GatewayIntentBits,
-	Partials,
-	InteractionType,
+	MessageEmbed,
+	MessageActionRow,
+	MessageButton,
+	Intents,
 } = require("discord.js");
 const fs = require("fs");
+const modals = require("discord-modals");
 const server = require("./server");
 const { forums, logChannels } = require("./data/channels.json");
 const fetch = require("node-fetch");
@@ -18,18 +19,10 @@ require("dotenv").config();
 // Initalize Client
 const client = new Client({
 	intents: [
-<<<<<<< HEAD
-		GatewayIntentBits.Guilds,
-		GatewayIntentBits.GuildMessages,
-		GatewayIntentBits.GuildMembers,
-	],
-	partials: [Partials.Message],
-=======
 		Intents.FLAGS.GUILDS,
 		Intents.FLAGS.GUILD_MESSAGES,
 		Intents.FLAGS.GUILD_MEMBERS,
 	],
->>>>>>> cb6328462ea48564dd4a6d68d5f5aa651e194f98
 });
 
 // Client Extension
@@ -37,12 +30,17 @@ require("./client_extension")(client);
 
 // Add extras to Client for simplicity with interactions
 client.Formatters = Formatters;
-client.MessageEmbed = EmbedBuilder;
+client.MessageEmbed = MessageEmbed;
+client.MessageActionRow = MessageActionRow;
+client.MessageButton = MessageButton;
+
+// Initalize Discord Modals
+modals(client);
 
 // Ready Event
 client.on("ready", async () => {
 	console.log(
-		`${"[Discord]".yellow} ${"[Authentication]".green} => ${`Logged in as ${client.user.tag}!`.red}`
+		`${"[Discord]".yellow} => ${`Logged in as ${client.user.tag}!`.red}`
 	);
 
 	// Set Client Activity/Status
@@ -70,7 +68,6 @@ client.on("debug", (info) => {
 	const debugData = `${type.green} => ${
 		info.replace(type, "").replace("[", "").replace("]", "").red
 	}`;
-
 	console.log(`${"[Discord Debug]".yellow} ${debugData.green}`);
 });
 
@@ -107,19 +104,11 @@ for (const file of modalFiles) {
 
 // Add Select Menus
 const menuFiles = fs
-<<<<<<< HEAD
-	.readdirSync("./select_menus")
-	.filter((file) => file.endsWith(".js"));
-
-for (const file of menuFiles) {
-	const menu = require(`./select_menus/${file}`);
-=======
 	.readdirSync("./menus")
 	.filter((file) => file.endsWith(".js"));
 
 for (const file of menuFiles) {
 	const menu = require(`./menus/${file}`);
->>>>>>> cb6328462ea48564dd4a6d68d5f5aa651e194f98
 	client.menuFiles.set(menu.data.name, menu);
 }
 
@@ -138,34 +127,18 @@ server.emitter.on("uptimeUpdate", (data) => {
 	let json;
 
 	if (data.typeName === "Up") {
-		const embed = new client.MessageEmbed()
+		const embed = new MessageEmbed()
 			.setTitle(`${data.name} is back online!`)
-			.setColor(client.colors.Info)
-			.addFields([
-				{
-					name: "HTTP Status",
-					value: data.httpStatus,
-					inline: false,
-				},
-				{
-					name: "Downtime Duration",
-					value: data.timeAffected,
-					inline: false,
-				},
-			]);
+			.setColor("#00ff00")
+			.addField("HTTP Status", data.httpStatus, false)
+			.addField("Downtime Duration", data.timeAffected, false);
 
 		json = embed;
 	} else if (data.typeName === "Down") {
-		const embed = new client.MessageEmbed()
+		const embed = new MessageEmbed()
 			.setTitle(`${data.name} is down!`)
-			.setColor(client.colors.Info)
-			.addFields([
-				{
-					name: "HTTP Status",
-					value: data.httpStatus,
-					inline: false,
-				},
-			]);
+			.setColor("#ff0000")
+			.addField("HTTP Status", data.httpStatus, false);
 
 		json = embed;
 	}
@@ -202,17 +175,11 @@ client.on("messageCreate", async (message) => {
 			],
 		};
 
-		const embed = new client.MessageEmbed()
+		const embed = new MessageEmbed()
 			.setTitle("Command")
-			.setColor(client.colors.Prompt)
-			.addFields([
-				{ name: "Name:", value: commandObject.data.name, inline: true },
-				{
-					name: "Description:",
-					value: commandObject.data.description,
-					inline: true,
-				},
-			])
+			.setColor("RANDOM")
+			.addField("Name:", commandObject.data.name, true)
+			.addField("Description:", commandObject.data.description, true)
 			.setFooter({
 				text: "To run this command, click the button below.",
 				iconURL: message.author.displayAvatarURL(),
@@ -232,7 +199,7 @@ client.on("messageCreate", async (message) => {
 // Interaction Event(s)
 client.on("interactionCreate", async (interaction) => {
 	// Slash Command
-	if (interaction.type === InteractionType.ApplicationCommand) {
+	if (interaction.isCommand()) {
 		const command = client.commands.get(interaction.commandName);
 
 		if (command) {
@@ -241,16 +208,10 @@ client.on("interactionCreate", async (interaction) => {
 			} catch (error) {
 				console.error(error);
 
-				let embed = new client.MessageEmbed()
+				let embed = new MessageEmbed()
 					.setTitle("Oops, there was an error!")
-					.setColor(client.colors.Error)
-					.addFields([
-						{
-							name: "Message",
-							value: Formatters.codeBlock("javascript", error),
-							inline: false,
-						},
-					]);
+					.setColor("RANDOM")
+					.addField("Message", Formatters.codeBlock("javascript", error), false);
 
 				await interaction.reply({
 					embeds: [embed],
@@ -272,16 +233,10 @@ client.on("interactionCreate", async (interaction) => {
 			} catch (error) {
 				console.error(error);
 
-				let embed = new client.MessageEmbed()
+				let embed = new MessageEmbed()
 					.setTitle("Oops, there was an error!")
-					.setColor(client.colors.Error)
-					.addFields([
-						{
-							name: "Message",
-							value: Formatters.codeBlock("javascript", error),
-							inline: false,
-						},
-					]);
+					.setColor("RANDOM")
+					.addField("Message", Formatters.codeBlock("javascript", error), false);
 
 				await interaction.reply({
 					embeds: [embed],
@@ -295,16 +250,10 @@ client.on("interactionCreate", async (interaction) => {
 				} catch (error) {
 					console.error(error);
 
-					let embed = new client.MessageEmbed()
+					let embed = new MessageEmbed()
 						.setTitle("Oops, there was an error!")
-						.setColor(client.colors.Error)
-						.addFields([
-							{
-								name: "Message",
-								value: Formatters.codeBlock("javascript", error),
-								inline: false,
-							},
-						]);
+						.setColor("RANDOM")
+						.addField("Message", Formatters.codeBlock("javascript", error), false);
 
 					await interaction.reply({
 						embeds: [embed],
@@ -316,8 +265,6 @@ client.on("interactionCreate", async (interaction) => {
 			}
 		}
 	}
-<<<<<<< HEAD
-=======
 
 	// Select Menu
 	if (interaction.isSelectMenu()) {
@@ -343,43 +290,21 @@ client.on("interactionCreate", async (interaction) => {
 		}
 	}
 });
->>>>>>> cb6328462ea48564dd4a6d68d5f5aa651e194f98
 
-	// Select Menu
-	if (interaction.isSelectMenu()) {
-		const menu = client.menuFiles.get(interaction.customId);
+client.on("modalSubmit", async (interaction) => {
+	const modal = client.modals.get(interaction.customId);
 
-		if (menu) {
-			try {
-				await menu.execute(client, interaction, fetch);
-			} catch (error) {
-				console.error(error);
+	if (!modal) {
+		let embed = new MessageEmbed()
+			.setTitle("Error")
+			.setColor("#FF0000")
+			.setDescription("Command does not exist!");
 
-				let embed = new client.MessageEmbed()
-					.setTitle("Oops, there was an error!")
-					.setColor(client.colors.Error)
-					.addFields([
-						{
-							name: "Message",
-							value: Formatters.codeBlock("javascript", error),
-							inline: false,
-						},
-					]);
-
-				await interaction.reply({
-					embeds: [embed],
-				});
-			}
-		} else {
-			await interaction.reply("Sorry, that menu does not exist.");
-		}
+		await interaction.reply({
+			embeds: [embed],
+		});
 	}
 
-<<<<<<< HEAD
-	// Modals
-	if (interaction.type === InteractionType.ModalSubmit) {
-		const modal = client.modals.get(interaction.customId);
-=======
 	try {
 		await modal.execute(client, interaction, server, fetch);
 	} catch (error) {
@@ -387,37 +312,10 @@ client.on("interactionCreate", async (interaction) => {
 			.setTitle("Oops, there was an error!")
 			.setColor("RANDOM")
 			.addField("Message", Formatters.codeBlock("javascript", error), false);
->>>>>>> cb6328462ea48564dd4a6d68d5f5aa651e194f98
 
-		if (!modal) {
-			let embed = new client.MessageEmbed()
-				.setTitle("Error")
-				.setColor(client.colors.Error)
-				.setDescription("Command does not exist!");
-
-			await interaction.reply({
-				embeds: [embed],
-			});
-		}
-
-		try {
-			await modal.execute(client, interaction, server, fetch);
-		} catch (error) {
-			let embed = new client.MessageEmbed()
-				.setTitle("Oops, there was an error!")
-				.setColor(client.colors.Error)
-				.addFields([
-					{
-						name: "Message",
-						value: Formatters.codeBlock("javascript", error),
-						inline: false,
-					},
-				]);
-
-			await interaction.reply({
-				embeds: [embed],
-			});
-		}
+		await interaction.reply({
+			embeds: [embed],
+		});
 	}
 });
 
@@ -468,20 +366,19 @@ client.on("threadCreate", async (thread) => {
 
 		// Send message to Log Channel
 		const logChannel = client.channels.cache.get(logChannels.support);
-		const embed = new client.MessageEmbed()
+		const embed = new MessageEmbed()
 			.setTitle(`New ${String(data.type)} Thread`)
-			.setColor(client.colors.Info)
-			.addFields([
-				{ name: "Thread Name:", value: String(json.thread.name), inline: true },
-				{ name: "Thread ID:", value: String(json.thread.id), inline: true },
-				{ name: "Channel Name:", value: String(json.channel.name), inline: true },
-				{ name: "Channel ID:", value: String(json.channel.id), inline: true },
-				{
-					name: "Creator Username:",
-					value: String(`${json.creator.name}#${json.creator.discriminator}`),
-					inline: true,
-				},
-			]);
+			.setColor("RANDOM")
+			.addField("Thread Name:", String(json.thread.name), true)
+			.addField("Thread ID:", String(json.thread.id), true)
+			.addField("Channel Name:", String(json.channel.name), true)
+			.addField("Channel ID:", String(json.channel.id), true)
+			.addField(
+				"Creator Username:",
+				String(`${json.creator.name}#${json.creator.discriminator}`),
+				true
+			)
+			.addField("Creator ID:", String(json.creator.id), true);
 
 		logChannel.send({
 			embeds: [embed],

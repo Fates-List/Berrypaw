@@ -1,14 +1,14 @@
+const { SlashCommandBuilder } = require("@discordjs/builders");
+
 module.exports = {
 	data: {
 		name: "eval",
 	},
 	async execute(client, interaction, server, fetch) {
-		const code = interaction.fields.getTextInputValue("code");
-		let inline = interaction.fields.getTextInputValue("inline") || "n";
-		let hidden = interaction.fields.getTextInputValue("hidden") || "n";
-
+		const code = interaction.getTextInputValue("code");
+		let inline = interaction.getTextInputValue("inline") || "n";
+		let hidden = interaction.getTextInputValue("hidden") || "n";
 		let embed;
-		let fields;
 
 		if (inline.toLowerCase() === "y") {
 			inline = true;
@@ -62,36 +62,32 @@ module.exports = {
 					obj = Object.getPrototypeOf(obj);
 				}
 
-				return data.reverse().join(" => ");
+				return data.reverse().join(" -> ");
 			};
-
-			fields = [
-				{
-					name: "Input:",
-					value: client.Formatters.codeBlock("javascript", limit(code)),
-					inline: inline,
-				},
-				{
-					name: "Output:",
-					value: client.Formatters.codeBlock("javascript", limit(results)),
-					inline: inline,
-				},
-				{
-					name: "Type:",
-					value: client.Formatters.codeBlock("javascript", typeOf),
-					inline: inline,
-				},
-				{
-					name: "Prototype:",
-					value: client.Formatters.codeBlock("javascript", tree(evaled)),
-					inline: inline,
-				},
-			];
 
 			embed = new client.MessageEmbed()
 				.setTitle("Evaluation Results")
-				.setColor(client.colors.Success)
-				.addFields(fields)
+				.setColor("RANDOM")
+				.addField(
+					"Input:",
+					client.Formatters.codeBlock("javascript", limit(code)),
+					inline
+				)
+				.addField(
+					"Output:",
+					client.Formatters.codeBlock("javascript", limit(results)),
+					inline
+				)
+				.addField(
+					"Type:",
+					client.Formatters.codeBlock("javascript", typeOf),
+					inline
+				)
+				.addField(
+					"Prototype:",
+					client.Formatters.codeBlock("javascript", tree(evaled)),
+					inline
+				)
 				.setFooter({
 					iconURL: interaction.user.displayAvatarURL(),
 					text: `Executed by ${interaction.user.username}, in about ${Math.floor(
@@ -99,28 +95,20 @@ module.exports = {
 					)} milliseconds`,
 				});
 		} catch (err) {
-			fields = [
-				{
-					name: "Input:",
-					value: client.Formatters.codeBlock("javascript", limit(code)),
-					inline: inline,
-				},
-				{
-					name: "Output:",
-					value: client.Formatters.codeBlock("javascript", limit(err)),
-					inline: inline,
-				},
-				{
-					name: "Type:",
-					value: client.Formatters.codeBlock("javascript", "Error"),
-					inline: inline,
-				},
-			];
-
 			embed = new client.MessageEmbed()
 				.setTitle("Evaluation Results")
-				.setColor(client.colors.Error)
-				.addFields(fields)
+				.setColor("#FF0000")
+				.addField("Input:", client.Formatters.codeBlock("javascript", code), inline)
+				.addField(
+					"Output:",
+					client.Formatters.codeBlock("javascript", limit(err)),
+					inline
+				)
+				.addField(
+					"Type:",
+					client.Formatters.codeBlock("javascript", "Error"),
+					inline
+				)
 				.setFooter({
 					iconURL: interaction.user.displayAvatarURL(),
 					text: `Executed by ${interaction.user.username}, in about ${Math.floor(

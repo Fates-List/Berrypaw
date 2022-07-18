@@ -1,9 +1,5 @@
-const {
-	SlashCommandBuilder,
-	TextInputBuilder,
-	ActionRowBuilder,
-} = require("@discordjs/builders");
-const { ModalBuilder, TextInputStyle } = require("discord.js");
+const { SlashCommandBuilder } = require("@discordjs/builders");
+const { Modal, TextInputComponent, showModal } = require("discord-modals");
 
 module.exports = {
 	data: new SlashCommandBuilder()
@@ -16,37 +12,36 @@ module.exports = {
 				content: "You do not have enough permissions to use this command!",
 			});
 
-		const modal = new ModalBuilder()
+		const modal = new Modal()
 			.setCustomId("eval")
-			.setTitle("Evaluate your Code");
+			.setTitle("Evaluate your Code")
+			.addComponents([
+				new TextInputComponent()
+					.setCustomId("code")
+					.setLabel("Code")
+					.setStyle("LONG")
+					.setMinLength(1)
+					.setPlaceholder("Write your Code here!")
+					.setRequired(true),
+				new TextInputComponent()
+					.setCustomId("inline")
+					.setLabel("Do you want the embed to be inlined?")
+					.setStyle("SHORT")
+					.setMaxLength(1)
+					.setPlaceholder("Y/N [Default: N]")
+					.setRequired(false),
+				new TextInputComponent()
+					.setCustomId("hidden")
+					.setLabel("Hidden?")
+					.setStyle("SHORT")
+					.setMaxLength(1)
+					.setPlaceholder("Y/N [Default: N]")
+					.setRequired(false),
+			]);
 
-		const code = new TextInputBuilder()
-			.setCustomId("code")
-			.setLabel("Code")
-			.setPlaceholder("Write your Code here!")
-			.setStyle(TextInputStyle.Paragraph)
-			.setRequired(true);
-
-		const inline = new TextInputBuilder()
-			.setCustomId("inline")
-			.setLabel("Do you want the embed to be inlined?")
-			.setPlaceholder("Y/N [Default: N]")
-			.setStyle(TextInputStyle.Short)
-			.setRequired(false);
-
-		const hidden = new TextInputBuilder()
-			.setCustomId("hidden")
-			.setLabel("Do you want the embed to be hidden?")
-			.setPlaceholder("Y/N [Default: N]")
-			.setStyle(TextInputStyle.Short)
-			.setRequired(false);
-
-		const firstRow = new ActionRowBuilder().addComponents([code]);
-		const secondRow = new ActionRowBuilder().addComponents([inline]);
-		const thirdRow = new ActionRowBuilder().addComponents([hidden]);
-
-		modal.addComponents([firstRow, secondRow, thirdRow]);
-
-		await interaction.showModal(modal);
+		showModal(modal, {
+			client: client,
+			interaction: interaction,
+		});
 	},
 };
