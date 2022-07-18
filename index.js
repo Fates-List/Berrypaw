@@ -18,18 +18,11 @@ require("dotenv").config();
 // Initalize Client
 const client = new Client({
 	intents: [
-<<<<<<< HEAD
 		GatewayIntentBits.Guilds,
 		GatewayIntentBits.GuildMessages,
 		GatewayIntentBits.GuildMembers,
 	],
 	partials: [Partials.Message],
-=======
-		Intents.FLAGS.GUILDS,
-		Intents.FLAGS.GUILD_MESSAGES,
-		Intents.FLAGS.GUILD_MEMBERS,
-	],
->>>>>>> cb6328462ea48564dd4a6d68d5f5aa651e194f98
 });
 
 // Client Extension
@@ -107,21 +100,13 @@ for (const file of modalFiles) {
 
 // Add Select Menus
 const menuFiles = fs
-<<<<<<< HEAD
 	.readdirSync("./select_menus")
 	.filter((file) => file.endsWith(".js"));
 
 for (const file of menuFiles) {
 	const menu = require(`./select_menus/${file}`);
-=======
 	.readdirSync("./menus")
 	.filter((file) => file.endsWith(".js"));
-
-for (const file of menuFiles) {
-	const menu = require(`./menus/${file}`);
->>>>>>> cb6328462ea48564dd4a6d68d5f5aa651e194f98
-	client.menuFiles.set(menu.data.name, menu);
-}
 
 // Add Buttons
 const buttonFiles = fs
@@ -316,36 +301,7 @@ client.on("interactionCreate", async (interaction) => {
 			}
 		}
 	}
-<<<<<<< HEAD
-=======
-
-	// Select Menu
-	if (interaction.isSelectMenu()) {
-		const menu = client.menuFiles.get(interaction.customId);
-
-		if (menu) {
-			try {
-				await menu.execute(client, interaction, fetch);
-			} catch (error) {
-				console.error(error);
-
-				let embed = new MessageEmbed()
-					.setTitle("Oops, there was an error!")
-					.setColor("RANDOM")
-					.addField("Message", Formatters.codeBlock("javascript", error), false);
-
-				await interaction.reply({
-					embeds: [embed],
-				});
-			}
-		} else {
-			await interaction.reply("Sorry, that menu does not exist.");
-		}
-	}
-});
->>>>>>> cb6328462ea48564dd4a6d68d5f5aa651e194f98
-
-	// Select Menu
+        // Select Menu
 	if (interaction.isSelectMenu()) {
 		const menu = client.menuFiles.get(interaction.customId);
 
@@ -374,21 +330,12 @@ client.on("interactionCreate", async (interaction) => {
 			await interaction.reply("Sorry, that menu does not exist.");
 		}
 	}
-
-<<<<<<< HEAD
-	// Modals
+        // Modals
 	if (interaction.type === InteractionType.ModalSubmit) {
 		const modal = client.modals.get(interaction.customId);
-=======
 	try {
 		await modal.execute(client, interaction, server, fetch);
 	} catch (error) {
-		let embed = new MessageEmbed()
-			.setTitle("Oops, there was an error!")
-			.setColor("RANDOM")
-			.addField("Message", Formatters.codeBlock("javascript", error), false);
->>>>>>> cb6328462ea48564dd4a6d68d5f5aa651e194f98
-
 		if (!modal) {
 			let embed = new client.MessageEmbed()
 				.setTitle("Error")
