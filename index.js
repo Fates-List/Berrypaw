@@ -1,12 +1,8 @@
 // Packages
 const {
 	Client,
-	Collection,
 	Formatters,
 	EmbedBuilder,
-	GatewayIntentBits,
-	Partials,
-	InteractionType,
 } = require("discord.js");
 const fs = require("fs");
 const server = require("./server");
@@ -18,12 +14,14 @@ require("dotenv").config();
 // Initalize Client
 const client = new Client({
 	intents: [
-		GatewayIntentBits.Guilds,
-		GatewayIntentBits.GuildMessages,
-		GatewayIntentBits.GuildMembers,
-		GatewayIntentBits.MessageContent,
+		1, // Guilds
+		512, // GuildMessages
+		2, // GuildMembers
+		32768, // MessageContent
 	],
-	partials: [Partials.Message],
+	partials: [
+		3, // Message
+	],
 });
 
 // Client Extension
@@ -45,14 +43,14 @@ client.on("ready", async () => {
 	if (process.env.NODE_ENV === "production") {
 		client.user.setStatus("online");
 
-		client.user.setActivity(`Select List`, {
-			type: "WATCHING",
+		client.user.setActivity(`my nightmares`, {
+			type: 3,
 		});
 	} else {
 		client.user.setStatus("idle");
 
 		client.user.setActivity(`Test Build`, {
-			type: "WATCHING",
+			type: 3,
 		});
 	}
 });
@@ -238,10 +236,10 @@ client.on("messageCreate", async (message) => {
 	}
 });
 
-// Interaction Event(s)
+// Interaction Event
 client.on("interactionCreate", async (interaction) => {
-	// Slash Command
-	if (interaction.type === InteractionType.ApplicationCommand) {
+	// Slash Command (2)
+	if (interaction.type === 2) {
 		const command = client.commands.get(interaction.commandName);
 
 		if (command) {
@@ -288,8 +286,8 @@ client.on("interactionCreate", async (interaction) => {
 		}
 	}
 
-	// Button
-	if (interaction.isButton()) {
+	// Button (3)
+	if (interaction.type === 3) {
 		const button = client.buttons.get(interaction.customId);
 		const command = client.commands.get(interaction.customId);
 
@@ -361,7 +359,7 @@ client.on("interactionCreate", async (interaction) => {
 		}
 	}
 
-	// Select Menu
+	// Select Menu 
 	if (interaction.isSelectMenu()) {
 		const menu = client.menus.get(interaction.customId);
 
@@ -391,8 +389,8 @@ client.on("interactionCreate", async (interaction) => {
 		}
 	}
 
-	// Modals
-	if (interaction.type === InteractionType.ModalSubmit) {
+	// Modals (5)
+	if (interaction.type === 5) {
 		const modal = client.modals.get(interaction.customId);
 
 		if (!modal) {
