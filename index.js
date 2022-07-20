@@ -317,21 +317,38 @@ client.on("interactionCreate", async (interaction) => {
 		} else {
 			// Check if button is equal to a slash command
 			if (command) {
-				try {
-					await command.execute(client, interaction, server, fetch);
-				} catch (error) {
-					console.error(error);
+				const permCheck = await client.isStaff(
+					interaction.user.id,
+					command.data.command.permission
+				);
 
+				if (permCheck.allowed) {
+					try {
+						await command.execute(client, interaction, server, fetch);
+					} catch (error) {
+						console.error(error);
+
+						let embed = new client.EmbedBuilder()
+							.setTitle("Oops, there was an error!")
+							.setColor(client.colors.Error)
+							.addFields([
+								{
+									name: "Message",
+									value: Formatters.codeBlock("javascript", error),
+									inline: false,
+								},
+							]);
+
+						await interaction.reply({
+							embeds: [embed],
+						});
+					}
+				} else {
+					// User doesn't have permission
 					let embed = new client.EmbedBuilder()
-						.setTitle("Oops, there was an error!")
+						.setTitle("Command Error")
 						.setColor(client.colors.Error)
-						.addFields([
-							{
-								name: "Message",
-								value: Formatters.codeBlock("javascript", error),
-								inline: false,
-							},
-						]);
+						.setDescription("You do not have permission to use this command.");
 
 					await interaction.reply({
 						embeds: [embed],
