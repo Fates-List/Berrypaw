@@ -66,7 +66,7 @@ module.exports = {
 				{ name: "Bot ID", value: data.bot_id, inline: false },
 			];
 
-			const embed = new client.MessageEmbed()
+			const embed = new client.EmbedBuilder()
 				.setTitle(data.username)
 				.setColor(client.colors.Success)
 				.setURL(`https://select.fateslist.xyz/bot/${data.bot_id}`)

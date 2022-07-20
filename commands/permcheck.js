@@ -1,9 +1,16 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 
 module.exports = {
-	data: new SlashCommandBuilder()
-		.setName("permcheck")
-		.setDescription("Check your permission level"),
+	data: {
+		interaction: new SlashCommandBuilder()
+			.setName("permcheck")
+			.setDescription("Check your permission level"),
+		command: {
+			name: "permcheck",
+			description: "Check your permission level",
+			permission: 0.0,
+		},
+	},
 	async execute(client, interaction, server, fetch) {
 		const staff = await client.isStaff(interaction.user.id, 0.0);
 

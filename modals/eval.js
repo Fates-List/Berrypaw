@@ -88,7 +88,7 @@ module.exports = {
 				},
 			];
 
-			embed = new client.MessageEmbed()
+			embed = new client.EmbedBuilder()
 				.setTitle("Evaluation Results")
 				.setColor(client.colors.Success)
 				.addFields(fields)
@@ -117,7 +117,7 @@ module.exports = {
 				},
 			];
 
-			embed = new client.MessageEmbed()
+			embed = new client.EmbedBuilder()
 				.setTitle("Evaluation Results")
 				.setColor(client.colors.Error)
 				.addFields(fields)

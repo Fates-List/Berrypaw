@@ -21,6 +21,7 @@ const client = new Client({
 		GatewayIntentBits.Guilds,
 		GatewayIntentBits.GuildMessages,
 		GatewayIntentBits.GuildMembers,
+		GatewayIntentBits.MessageContent,
 	],
 	partials: [Partials.Message],
 });
@@ -30,7 +31,7 @@ require("./client_extension")(client);
 
 // Add extras to Client for simplicity with interactions
 client.Formatters = Formatters;
-client.MessageEmbed = EmbedBuilder;
+client.EmbedBuilder = EmbedBuilder;
 
 // Ready Event
 client.on("ready", async () => {
@@ -75,10 +76,10 @@ client.on("error", (error) => {
 });
 
 // Collections
-client.commands = new Collection();
-client.buttons = new Collection();
-client.modals = new Collection();
-client.menus = new Collection();
+client.commands = new Map();
+client.buttons = new Map();
+client.modals = new Map();
+client.menus = new Map();
 
 // Add Commands
 const commandFiles = fs
@@ -87,7 +88,7 @@ const commandFiles = fs
 
 for (const file of commandFiles) {
 	const command = require(`./commands/${file}`);
-	client.commands.set(command.data.name, command);
+	client.commands.set(command.data.interaction.name, command);
 }
 
 // Add Modals
@@ -125,7 +126,7 @@ server.emitter.on("uptimeUpdate", (data) => {
 	let json;
 
 	if (data.typeName === "Up") {
-		const embed = new client.MessageEmbed()
+		const embed = new client.EmbedBuilder()
 			.setTitle(`${data.name} is back online!`)
 			.setColor(client.colors.Info)
 			.addFields([
@@ -143,7 +144,7 @@ server.emitter.on("uptimeUpdate", (data) => {
 
 		json = embed;
 	} else if (data.typeName === "Down") {
-		const embed = new client.MessageEmbed()
+		const embed = new client.EmbedBuilder()
 			.setTitle(`${data.name} is down!`)
 			.setColor(client.colors.Info)
 			.addFields([
@@ -177,38 +178,59 @@ client.on("messageCreate", async (message) => {
 	const commandObject = client.commands.get(commandName);
 
 	if (commandObject) {
-		const button = {
-			type: 1,
-			components: [
-				{
-					type: 2,
-					label: "Run command",
-					style: 1,
-					custom_id: commandObject.data.name,
-				},
-			],
-		};
+		const permCheck = await client.isStaff(
+			message.author.id,
+			commandObject.data.command.permission
+		);
 
-		const embed = new client.MessageEmbed()
-			.setTitle("Command")
-			.setColor(client.colors.Prompt)
-			.addFields([
-				{ name: "Name:", value: commandObject.data.name, inline: true },
-				{
-					name: "Description:",
-					value: commandObject.data.description,
-					inline: true,
-				},
-			])
-			.setFooter({
-				text: "To run this command, click the button below.",
-				iconURL: message.author.displayAvatarURL(),
+		if (permCheck.allowed) {
+			const button = {
+				type: 1,
+				components: [
+					{
+						type: 2,
+						label: "Execute",
+						style: 1,
+						custom_id: commandObject.data.interaction.name,
+					},
+				],
+			};
+
+			const embed = new client.EmbedBuilder()
+				.setTitle("Command")
+				.setColor(client.colors.Prompt)
+				.addFields([
+					{ name: "Name:", value: commandObject.data.command.name, inline: true },
+					{
+						name: "Description:",
+						value: commandObject.data.command.description,
+						inline: true,
+					},
+					{
+						name: "Permission:",
+						value: commandObject.data.command.permission.toString(),
+						inline: true,
+					},
+				])
+				.setFooter({
+					text: "To run this command, click the button below.",
+					iconURL: message.author.displayAvatarURL(),
+				});
+
+			message.reply({
+				embeds: [embed],
+				components: [button],
 			});
+		} else {
+			const embed = new client.EmbedBuilder()
+				.setTitle("Command Error")
+				.setColor(client.colors.Error)
+				.setDescription("You do not have permission to use this command.");
 
-		message.reply({
-			embeds: [embed],
-			components: [button],
-		});
+			message.reply({
+				embeds: [embed],
+			});
+		}
 	} else {
 		message.reply({
 			content: "Sorry, that command was not found!",
@@ -223,27 +245,45 @@ client.on("interactionCreate", async (interaction) => {
 		const command = client.commands.get(interaction.commandName);
 
 		if (command) {
-			try {
-				await command.execute(client, interaction, server, fetch);
-			} catch (error) {
-				console.error(error);
+			const permCheck = await client.isStaff(
+				interaction.user.id,
+				command.data.command.permission
+			);
 
-				let embed = new client.MessageEmbed()
-					.setTitle("Oops, there was an error!")
+			if (permCheck.allowed) {
+				try {
+					await command.execute(client, interaction, server, fetch);
+				} catch (error) {
+					console.error(error);
+
+					let embed = new client.EmbedBuilder()
+						.setTitle("Oops, there was an error!")
+						.setColor(client.colors.Error)
+						.addFields([
+							{
+								name: "Message",
+								value: Formatters.codeBlock("javascript", error),
+								inline: false,
+							},
+						]);
+
+					await interaction.reply({
+						embeds: [embed],
+					});
+				}
+			} else {
+				// User doesn't have permission
+				let embed = new client.EmbedBuilder()
+					.setTitle("Command Error")
 					.setColor(client.colors.Error)
-					.addFields([
-						{
-							name: "Message",
-							value: Formatters.codeBlock("javascript", error),
-							inline: false,
-						},
-					]);
+					.setDescription("You do not have permission to use this command.");
 
 				await interaction.reply({
 					embeds: [embed],
 				});
 			}
 		} else {
+			// Command does not exist
 			await interaction.reply("This command does not exist.");
 		}
 	}
@@ -259,7 +299,7 @@ client.on("interactionCreate", async (interaction) => {
 			} catch (error) {
 				console.error(error);
 
-				let embed = new client.MessageEmbed()
+				let embed = new client.EmbedBuilder()
 					.setTitle("Oops, there was an error!")
 					.setColor(client.colors.Error)
 					.addFields([
@@ -282,7 +322,7 @@ client.on("interactionCreate", async (interaction) => {
 				} catch (error) {
 					console.error(error);
 
-					let embed = new client.MessageEmbed()
+					let embed = new client.EmbedBuilder()
 						.setTitle("Oops, there was an error!")
 						.setColor(client.colors.Error)
 						.addFields([
@@ -314,7 +354,7 @@ client.on("interactionCreate", async (interaction) => {
 			} catch (error) {
 				console.error(error);
 
-				let embed = new client.MessageEmbed()
+				let embed = new client.EmbedBuilder()
 					.setTitle("Oops, there was an error!")
 					.setColor(client.colors.Error)
 					.addFields([
@@ -339,7 +379,7 @@ client.on("interactionCreate", async (interaction) => {
 		const modal = client.modals.get(interaction.customId);
 
 		if (!modal) {
-			let embed = new client.MessageEmbed()
+			let embed = new client.EmbedBuilder()
 				.setTitle("Error")
 				.setColor(client.colors.Error)
 				.setDescription("Command does not exist!");
@@ -351,7 +391,7 @@ client.on("interactionCreate", async (interaction) => {
 			try {
 				await modal.execute(client, interaction, server, fetch);
 			} catch (error) {
-				let embed = new client.MessageEmbed()
+				let embed = new client.EmbedBuilder()
 					.setTitle("Oops, there was an error!")
 					.setColor(client.colors.Error)
 					.addFields([
@@ -417,7 +457,7 @@ client.on("threadCreate", async (thread) => {
 
 		// Send message to Log Channel
 		const logChannel = client.channels.cache.get(logChannels.support);
-		const embed = new client.MessageEmbed()
+		const embed = new client.EmbedBuilder()
 			.setTitle(`New ${String(data.type)} Thread`)
 			.setColor(client.colors.Info)
 			.addFields([

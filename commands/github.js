@@ -1,9 +1,16 @@
 const { SlashCommandBuilder } = require("@discordjs/builders");
 
 module.exports = {
-	data: new SlashCommandBuilder()
-		.setName("github")
-		.setDescription("View the GitHub repository"),
+	data: {
+		interaction: new SlashCommandBuilder()
+			.setName("github")
+			.setDescription("View the GitHub repository"),
+		command: {
+			name: "github",
+			description: "View the GitHub repository",
+			permission: 0.0,
+		},
+	},
 	async execute(client, interaction, server, fetch) {
 		await interaction.reply({
 			content:

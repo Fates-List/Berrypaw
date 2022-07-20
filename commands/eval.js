@@ -6,16 +6,17 @@ const {
 const { ModalBuilder, TextInputStyle } = require("discord.js");
 
 module.exports = {
-	data: new SlashCommandBuilder()
-		.setName("eval")
-		.setDescription("Test some code!"),
+	data: {
+		interaction: new SlashCommandBuilder()
+			.setName("eval")
+			.setDescription("Test some code!"),
+		command: {
+			name: "eval",
+			description: "Test some code!",
+			permission: 6.5,
+		},
+	},
 	async execute(client, interaction, server, fetch) {
-		const isStaff = await client.isStaff(interaction.user.id, 6.5);
-		if (!isStaff.allowed)
-			return interaction.reply({
-				content: "You do not have enough permissions to use this command!",
-			});
-
 		const modal = new ModalBuilder()
 			.setCustomId("eval")
 			.setTitle("Evaluate your Code");

@@ -6,9 +6,17 @@ const {
 const { ModalBuilder, TextInputStyle } = require("discord.js");
 
 module.exports = {
-	data: new SlashCommandBuilder()
-		.setName("bot-info")
-		.setDescription("Get some information about a bot on Select List and more."),
+	data: {
+		interaction: new SlashCommandBuilder()
+			.setName("bot-info")
+			.setDescription("Get some information about a bot on Select List and more.")
+			.toJSON(),
+		command: {
+			name: "bot-info",
+			description: "Get some information about a bot on Select List and more.",
+			permission: 0.0,
+		},
+	},
 	async execute(client, interaction, server) {
 		const modal = new ModalBuilder()
 			.setCustomId("bot-information")

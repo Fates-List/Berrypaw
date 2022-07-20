@@ -29,7 +29,7 @@ const commandFiles = fs
 
 for (const file of commandFiles) {
 	const command = require(`./commands/${file}`);
-	commands.push(command.data.toJSON());
+	commands.push(command.data.interaction);
 }
 
 rest
